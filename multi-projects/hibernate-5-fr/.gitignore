@@ -1,0 +1,22 @@
+##OS
+.DS_Store
+
+## Ruby
+.bundle
+_bin
+
+## Asciidoctor
+*.html
+*.pdf
+
+## Java
+.classpath
+.project
+.settings/
+target/
+logs/
+.idea/
+*.iml
+*.svg
+*.svg.cache
+

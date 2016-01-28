@@ -1,0 +1,9 @@
+[submodule "multi-projects/hibernate-5-fr/asciidoctor-backends"]
+	path = multi-projects/hibernate-5-fr/asciidoctor-backends
+	url = https://github.com/asciidoctor/asciidoctor-backends.git
+[submodule "multi-projects/hibernate-5-fr/reveal.js"]
+	path = multi-projects/hibernate-5-fr/reveal.js
+	url = https://github.com/hakimel/reveal.js
+[submodule "multi-projects/hibernate-5-fr/asciidoctor-reveal.js"]
+	path = multi-projects/hibernate-5-fr/asciidoctor-reveal.js
+	url = https://github.com/asciidoctor/asciidoctor-reveal.js

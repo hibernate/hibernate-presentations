@@ -1,0 +1,427 @@
+= Hibernate tu connais... mais en fait tu connais pas
+Emmanuel Bernard
+:backend: revealjs
+:revealjs_theme: night
+// :revealjs_theme: beige
+// :revealjs_theme: night
+:revealjs_controls: false
+:revealjs_progress: false
+:revealjs_history: true
+:revealjs_transition: default
+:source-highlighter: highlightjs
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Hibernate tu connais... mais en fait tu connais pas
+
+Emmanuel Bernard +
+Red Hat
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Qu’est-ce qu’en retirer ?
+
+* Tour d'horizon des projets Hibernate
+* Des nouvelles fonctionnalités de la version 5
+** Comment utiliser ces fonctionnalités
+
+* Sortir avec des idées pour vos applications
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Emmanuel Bernard
+
+* Mr Data chez JBoss
+* Hibernate, Infinispan, Teiid, Modeshape
+* Podcast http://asylum.jboss.org & https://lescastcodeurs.com
+
+* Le reste https://emmanuelbernard.com
+* link:https://twitter.com/emmanuelbernard[@emmanuelbernard]
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Hibernate ORM 5
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Un bootstrap plus propre
+
+* Modularité
+** Wildfly
+** OSGi
+* Pourquoi on modularise ?
+* Pleins de problèmes
+** extension
+** intégration avec ORM
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Bootstrap
+
+[source,java]
+----
+StandardServiceRegistry standardRegistry = new StandardServiceRegistryBuilder()
+         .configure( "org/hibernate/example/MyCfg.xml" )
+         .build();
+
+Metadata metadata = new MetadataSources( standardRegistry )
+        .addAnnotatedClass( MyEntity.class )
+        .addAnnotatedClassName( "org.hibernate.example.Customer" )
+        .addResource( "org/hibernate/example/Order.hbm.xml" )
+        .addResource( "org/hibernate/example/Product.orm.xml" )
+        .getMetadataBuilder()
+        .applyImplicitNamingStrategy( ImplicitNamingStrategyJpaCompliantImpl.INSTANCE )
+        .build();
+
+SessionFactory sessionFactory = metadata.getSessionFactoryBuilder()
+        .applyBeanManager( getBeanManagerFromSomewhere() )
+        //CDI BeanManager to the SessionFactory being built
+        .build();
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Java 8
+
+* Nouveaux types
+** Date et Time
+* Java 5, 6, 7
+** Generics
+** Blocks autoclose
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Date and Time
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-java8</artifactId>
+    <version>${hibernate.version}</version>
+</dependency>
+----
+
+* DATE: `java.time.LocalDate`
+* TIME: `java.time.LocalTime`, `java.time.OffsetTime`
+* TIMESTAMP: `java.time.Instant`, `java.time.LocalDateTime`, `java.time.OffsetDateTime` and `java.time.ZonedDateTime`
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Generics et AutoClosable
+
+[source,java]
+----
+try ( Session session = sessionFactory.openSession() ) {
+    Address address = session.get(Address.class, id);
+    return address.getCity();
+}
+----
+
+* Resources `AutoClosable`
+** `Session` / `StatelessSession`
+** `SessionFactory`
+** `ScrollableResults`
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Augmentation par Bytecode
+
+* Détection de changements plus intelligents
+* Meilleur support Maven et Gradle
+* Chargements tardifs des propriétés
+** Sous groupes
+* Gestion bidirectionnelle automatique
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Maven
+
+[source,xml]
+----
+<plugin>
+    <groupId>org.hibernate.orm.tooling</groupId>
+    <artifactId>hibernate-enhance-maven-plugin</artifactId>
+    <version>${currentHibernateVersion}</version>
+    <executions>
+        <execution>
+            <configuration>
+                <failOnError>true</failOnError>
+                <enableLazyInitialization>true</enableLazyInitialization>
+                <enableDirtyTracking>true</enableDirtyTracking>
+                <enableAssociationManagement>true</enableAssociationManagement>
+            </configuration>
+            <goals>
+                <goal>enhance</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Gradle
+
+[source,groovy]
+----
+ext {
+    hibernateVersion = 'hibernate-version-you-want'
+}
+
+buildscript {
+    dependencies {
+        classpath "org.hibernate:hibernate-gradle-plugin:$hibernateVersion"
+    }
+}
+
+hibernate {
+    enhance {
+        // any configuration goes here
+    }
+}
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Propriétés lazy
+
+[source,java]
+----
+@Entity
+ public class Customer {
+    @Id
+    private Integer id;
+
+    private String name;
+
+    @Basic( fetch = FetchType.LAZY )
+    private UUID accountsPayableXrefId;
+
+    @Lob @Basic( fetch = FetchType.LAZY )
+    @LazyGroup( "lobs" )
+    private Blob image;
+    ...
+}
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Management des associations - avant
+
+[source,java]
+----
+Order order = new Order();
+LineItem lineItem = new LineItem();
+order.getLineItems().add( lineItem );
+lineItem.setOrder( order );
+
+lineItem.getOrder.getName();
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Management des associations - après
+
+[source,java]
+----
+Order order = new Order();
+LineItem lineItem = new LineItem();
+order.getLineItems().add( lineItem );
+
+lineItem.getOrder.getName();
+// Without byte code enhancement this would
+// throw a NPE in normal Java usage
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Cache second niveau
+
+* Moins d’objets créés (key)
+* Cache par référence
+
+[source,xml]
+----
+<property name="hibernate.cache.use_reference_entries" values=“true"/>
+----
+
+[source,java]
+----
+@Entity @Proxy( lazy = false )
+@Immutable
+@Cacheable @Cache( usage = CacheConcurrencyStrategy.READ_ONLY )
+public class MyReferenceData {
+    @Id
+    private Integer id;
+    private String name;
+    private String theValue;
+    ....
+}
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Various
+
+* `@GeneratedValue(strategy=AUTO)`
+** UUID, custom strategy
+* Naming strategy
+** physical and implicit
+* *Documentation*
+* Blog
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Hibernate Search
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Requête full-text
+
+* Index inversé
+* Lucene 5
+* Niveau objet
+* Clusterisé
+** Master / slaves
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Ce qui est récent
+
+* Lucene 5
+* Améliorations de perf significatives
+** approche micro batch, proche des perfs NRT
+* Backend Elasticsearch
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Un exemple "macroservice"
+
+[source,java]
+----
+@Entity @Indexed @Spatial
+public class Address {
+    @Id Integer id;
+
+    @Field String street1;
+
+    @Field(analyze=NO) @SortableField @Facet
+    String city;
+
+    @Facet @NumericField int floor;
+
+    @Latitude Long latitude;
+    @Longitude Long longitude;
+
+    @IndexedEmbedded Country country;
+
+    ...
+}
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== !
+
+[source,java]
+----
+QueryBuilder b = fullTextSession.getSearchFactory()
+        .buildQueryBuilder().forEntity( Address.class ).get();
+
+org.apache.lucene.search.Query luceneQuery = b
+    .bool()
+        .must( b
+            .spatial().within( radius, Unit.KM )
+                .ofLatitude( centerLatitude )
+                .andLongitude( centerLongitude )
+                .createQuery() )
+        .must( b
+            .keyword().fuzzy()
+                .onField("street1")
+                .matching(street).createQuery()
+        )
+        .should( b
+            .range()
+                .onField("floor").boostedTo(3)
+                .above(2).excludeLimit().createQuery()
+        )
+        .createQuery();
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== !
+
+[source,java]
+----
+FacetingRequest cityFacetRequest = b
+    .facet()
+        .name("cities")
+        .onField("city")
+        .discrete()
+            .orderedBy(FacetSortOrder.FIELD_VALUE)
+        .includeZeroCounts(false)
+        .createFacetingRequest();
+
+FacetingRequest floorFacetRequest = builder
+    .facet()
+        .name("floors")
+        .onField("floor")
+        .range()
+            .orderedBy(FacetSortOrder.RANGE_DEFINITION_ORDER)
+            .below(0).excludeLimit()
+            .from(0).to(2).excludeLimit()
+            .above(2)
+        .createFacetingRequest();
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== !
+
+[source,java]
+----
+// create the query
+org.hibernate.Query hibQuery = fullTextSession
+        .createFullTextQuery( luceneQuery, Address.class );
+
+// create the facets
+FacetManager facetManager = fullTextQuery.getFacetManager();
+facetManager.enableFaceting(cityFacetRequest);
+facetManager.enableFaceting(floorFacetRequest);
+
+// get the results
+List results = hibQuery.list();
+
+// retrieve the faceting results
+List<Facet> facets = facetManager.getFacets("floors");
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Hibernate OGM
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== JPA pour NoSQL
+
+* MongoDB (Fongo)
+* Infinispan
+* Neo4J (remote et embedded)
+* Redis
+* EhCache
+* Cassandra
+* CouchDB
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Les premiers pas pour commencer
+
+[source,xml]
+----
+<dependencies>
+    <dependency>
+        <groupId>org.hibernate.ogm</groupId>
+        <artifactId>hibernate-ogm-neo4j</artifactId>
+    </dependency>
+</dependencies>
+
+<persistence>
+    <persistence-unit name="ogm-neo4j" transaction-type="JTA">
+        <!-- Use Hibernate OGM provider: configuration will be transparent -->
+        <provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider>
+        <properties>
+            <property name="hibernate.ogm.datastore.provider" value="neo4j"/>
+        </properties>
+    </persistence-unit>
+</persistence>
+----
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Hibernate Envers
+
+[data-background="images/desktop_hibernate_1920x1200.jpg"]
+== Q&A
+
+* Essayer Hibernate *, c’est l’adopter
+* Contribuer (retours, doc, code, haine/amour)
+* http://hibernate.org/
+* Vous en avez retiré quoi ?
+
+== Episode Les Cast Codeurs en direct
+
+12:45 en amphi
