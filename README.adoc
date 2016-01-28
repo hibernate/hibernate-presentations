@@ -1,0 +1,15 @@
+= Hibernate Presentations
+
+This is a non complete repository of presentations related to the Hibernate projects.
+
+Each project has a specific subdirectory.
+Presentations addressing several projects are in the directory `multi-projects`.
+
+Format and technology is not constrained.
+The first example is a reveal.js + Asciidoctor based presentation.
+
+== List of presentations
+
+link:multi-projects/hibernate-5-fr::
+Presentation on the Hibernate 5 portfolio in French.
+First done early 2016.
