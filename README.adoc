@@ -8,8 +8,17 @@ Presentations addressing several projects are in the directory `multi-projects`.
 Format and technology is not constrained.
 The first example is a reveal.js + Asciidoctor based presentation.
 
+== How to use
+
+Make sure to clone recursively as the repo contains submodules.
+
+[source,bash]
+----
+git clone --recursive git@github.com:hibernate/hibernate-presentations.git
+----
+
 == List of presentations
 
-link:multi-projects/hibernate-5-fr::
+link:multi-projects/hibernate-5-fr[multi-projects/hibernate-5-fr]::
 Presentation on the Hibernate 5 portfolio in French.
 First done early 2016.
