@@ -1,0 +1,26 @@
+= Hibernate tu connais... mais tu connais pas
+Emmanuel Bernard
+
+Needs Ruby. Tested with version 2.1.4. Isolation with RVM recommended.
+
+[source,bash]
+.initial installation
+----
+# need to install bundler and rake
+gem install bundler
+gem install rake
+
+# if using rvm, create the `.rvmrc` file to isolate your Ruby
+
+# install the necessary gems locally
+rake setup
+----
+
+To build the presentation,
+
+[source,bash]
+----
+rake build
+# open slide.html in your local browser
+----
+
