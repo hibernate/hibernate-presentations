@@ -421,7 +421,3 @@ List<Facet> facets = facetManager.getFacets("floors");
 * Contribuer (retours, doc, code, haine/amour)
 * http://hibernate.org/
 * Vous en avez retiré quoi ?
-
-== Episode Les Cast Codeurs en direct
-
-12:45 en amphi
