@@ -22,3 +22,7 @@ git clone --recursive git@github.com:hibernate/hibernate-presentations.git
 link:multi-projects/hibernate-5-fr[multi-projects/hibernate-5-fr]::
 Presentation on the Hibernate 5 portfolio in French.
 First done early 2016.
+
+== License
+
+Except where otherwise noted, this content is licensed under the link:http://creativecommons.org/licenses/by/4.0/legalcode[Creative Commons Attribution 4.0 International Public License].
